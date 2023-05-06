@@ -7,8 +7,6 @@ package jframe;
 
 import java.awt.Color;
 
-
-
 /**
  *
  * @author Gaurav

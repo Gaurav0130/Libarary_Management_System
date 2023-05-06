@@ -40,7 +40,7 @@ public class IssueBook extends javax.swing.JFrame {
                 lbl_author.setText(rs.getString("author"));
                 lbl_quantity.setText(rs.getString("quantity"));
             } else {
-                lbl_bookError.setText("Invalid Book ID");
+                lbl_bookError.setText("Invalid Book ID"); 
             }
 
         } catch (Exception e) {
@@ -65,7 +65,9 @@ public class IssueBook extends javax.swing.JFrame {
                 lbl_course.setText(rs.getString("course"));
                 lbl_branch.setText(rs.getString("branch"));
             } else {
-                lbl_studentError.setText("Invalid Student ID");
+                lbl_studentError.setText("");
+              
+                
             }
 
         } catch (Exception e) {
@@ -490,6 +492,7 @@ public class IssueBook extends javax.swing.JFrame {
     private void txt_bookIdFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txt_bookIdFocusLost
         if (!txt_bookId.getText().equals("")) {
             getBookDetails();
+            
         }
     }//GEN-LAST:event_txt_bookIdFocusLost
 
@@ -499,7 +502,9 @@ public class IssueBook extends javax.swing.JFrame {
 
     private void txt_studentIdFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txt_studentIdFocusLost
         if (!txt_studentId.getText().equals("")) {
+            
             getStudentDetails();
+           
         }
     }//GEN-LAST:event_txt_studentIdFocusLost
 
