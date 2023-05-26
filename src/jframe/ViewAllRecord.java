@@ -4,10 +4,12 @@
  */
 package jframe;
 
+import java.awt.HeadlessException;
 import java.sql.PreparedStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import javax.swing.JOptionPane;
@@ -18,105 +20,91 @@ import javax.swing.table.DefaultTableModel;
  * @author Gaurav
  */
 public class ViewAllRecord extends javax.swing.JFrame {
-    
-   
+
     /**
      * Creates new form ViewAllRecord
      */
     DefaultTableModel model;
+
     public ViewAllRecord() {
         initComponents();
         setIssueBookDetailsTable();
     }
-    
+
     // to set the book details into the table
-    public void setIssueBookDetailsTable(){
-    
+    public void setIssueBookDetailsTable() {
+
         try {
-        Class. forName ("com.mysql.jdbc.Driver");
-        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/library_ms","root", "");
-        Statement st = con.createStatement();
-        ResultSet rs = st.executeQuery("select * from issue_book_details");
-        
-        
-            while(rs.next()){
-            String id = rs.getString("id");
-            String bookName = rs.getString("book_name");
-            String studentName = rs.getString("student_name");
-            String issueDate = rs.getString("issue_date");
-            String dueDate = rs.getString("due_date");
-             String status = rs.getString("status");
-            
-            Object[] obj = {id,bookName,studentName,issueDate,dueDate,status};
-            model = (DefaultTableModel) tbl_issueBookDetails.getModel();
-            model.addRow(obj);
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/library_ms", "root", "");
+            Statement st = con.createStatement();
+            ResultSet rs = st.executeQuery("select * from issue_book_details");
+
+            while (rs.next()) {
+                String id = rs.getString("id");
+                String bookName = rs.getString("book_name");
+                String studentName = rs.getString("student_name");
+                String issueDate = rs.getString("issue_date");
+                String dueDate = rs.getString("due_date");
+                String status = rs.getString("status");
+
+                Object[] obj = {id, bookName, studentName, issueDate, dueDate, status};
+                model = (DefaultTableModel) tbl_issueBookDetails.getModel();
+                model.addRow(obj);
             }
-        
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ClassNotFoundException | SQLException e) {
         }
     }
-    
+
     // mentod to clear table
-    
-    public void clearTable(){
+    public void clearTable() {
         DefaultTableModel model = (DefaultTableModel) tbl_issueBookDetails.getModel();
         model.setRowCount(0);
     }
-    
+
     // to fetch the recourd using date fields 
     public void search() {
-    Date uFromDate = date_fromDate.getDatoFecha(); 
-    Date uToDate = date_toDate.getDatoFecha();
+        Date uFromDate = date_fromDate.getDatoFecha();
+        Date uToDate = date_toDate.getDatoFecha();
 
-   
+        Long l1 = uFromDate.getTime();
+        long l2 = uToDate.getTime();
 
-    Long l1 = uFromDate.getTime();
-    long l2 = uToDate.getTime();
+        java.sql.Date fromDate = new java.sql.Date(l1);
+        java.sql.Date toDate = new java.sql.Date(l2);
 
-   
-    java.sql.Date fromDate = new java.sql.Date(l1);
-    java.sql.Date toDate = new java.sql.Date(l2);
+        try {
+            Connection con = DBConnection.getConnection();
+            String sql = "select * from issue_book_details where issue_date and due_date BETWEEN ? and ? ";
+            PreparedStatement pst = con.prepareStatement(sql);
 
-    try {
-        Connection con = DBConnection.getConnection();
-        String sql = "select * from issue_book_details where issue_date BETWEEN ? and ? ";
-        PreparedStatement pst = con.prepareStatement(sql);
+            pst.setDate(1, fromDate);
+            pst.setDate(2, toDate);
 
-        pst.setDate(1, fromDate);
-        pst.setDate(2, toDate);
+            ResultSet rs = pst.executeQuery();
 
-        ResultSet rs = pst.executeQuery();
+            if (rs.next() == false) {
+                JOptionPane.showMessageDialog(this, "No Record found");
+            } else {
+                while (rs.next()) {
+                    String id = rs.getString("id");
+                    String bookName = rs.getString("book_name");
+                    String studentName = rs.getString("student_name");
+                    Date issueDate = rs.getDate("issue_date");
+                    Date dueDate = rs.getDate("due_date");
+                    String status = rs.getString("status");
 
-        if(rs.next() == false){
-            JOptionPane.showMessageDialog(this, "No Record found");
-        } else {
-            while (rs.next()) {
-            String id = rs.getString("id");
-            String bookName = rs.getString("book_name");
-            String studentName = rs.getString("student_name");
-            Date issueDate = rs.getDate("issue_date");
-            Date dueDate = rs.getDate("due_date");
-            String status = rs.getString("status");
-
-            Object[] obj = { id, bookName, studentName, issueDate, dueDate, status };
-            model = (DefaultTableModel) tbl_issueBookDetails.getModel();
-            model.addRow(obj);
+                    Object[] obj = {id, bookName, studentName, issueDate, dueDate, status};
+                    model = (DefaultTableModel) tbl_issueBookDetails.getModel();
+                    model.addRow(obj);
+                }
+            }
+        } catch (HeadlessException | SQLException e) {
         }
-        }
-        
-
-    } catch (Exception e) {
-        e.printStackTrace();
     }
 
-}
-
-
-    
     /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
@@ -148,8 +136,9 @@ public class ViewAllRecord extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("STXinwei", 1, 40)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("View Record ");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(580, 50, -1, -1));
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/Image's/ViewAllRecord.png"))); // NOI18N
+        jLabel1.setText("View All Record ");
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 50, -1, -1));
 
         date_toDate.setColorBackground(new java.awt.Color(111, 56, 197));
         date_toDate.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -207,6 +196,7 @@ public class ViewAllRecord extends javax.swing.JFrame {
 
         jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel11.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/icon/BackButton.png"))); // NOI18N
         jLabel11.setText("Back");
         jLabel11.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -219,7 +209,7 @@ public class ViewAllRecord extends javax.swing.JFrame {
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
-                .addContainerGap(40, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel11)
                 .addContainerGap())
         );
@@ -323,21 +313,21 @@ public class ViewAllRecord extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel11MouseClicked
 
     private void rSMaterialButtonCircle5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle5ActionPerformed
-          clearTable();
+        clearTable();
         setIssueBookDetailsTable();
     }//GEN-LAST:event_rSMaterialButtonCircle5ActionPerformed
 
     private void rSMaterialButtonCircle6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle6ActionPerformed
-    if(date_fromDate.getDatoFecha() != null && date_toDate.getDatoFecha() != null){
-       clearTable();
-       search();
-    }else{
-        JOptionPane.showMessageDialog(this, "please slect a date");
-    }
+        if (date_fromDate.getDatoFecha() != null && date_toDate.getDatoFecha() != null) {
+            clearTable();
+            search();
+        } else {
+            JOptionPane.showMessageDialog(this, "please slect a both the date");
+        }
     }//GEN-LAST:event_rSMaterialButtonCircle6ActionPerformed
 
     private void rSMaterialButtonCircle5MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle5MouseClicked
-     
+
     }//GEN-LAST:event_rSMaterialButtonCircle5MouseClicked
 
     private void rSMaterialButtonCircle6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle6MouseClicked
